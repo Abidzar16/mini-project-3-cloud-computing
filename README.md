@@ -1,4 +1,4 @@
-# Mini Project Sesi 20 - Edge Computing & IoT in Cloud
+# Mini Project 3 (Sesi 20)  - Edge Computing & IoT in Cloud
 
 **IoT Monitoring System dengan HiveMQ, Python, InfluxDB, dan Grafana**
 
