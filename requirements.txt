@@ -1,0 +1,11 @@
+# MQTT Client
+paho-mqtt>=1.6.1,<2.0.0
+
+# InfluxDB Client
+influxdb-client[ciso]>=1.42.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Logging (standard library, no install needed)
+# json, time, random (standard library)

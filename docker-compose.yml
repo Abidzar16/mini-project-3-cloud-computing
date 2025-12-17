@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # HiveMQ MQTT Broker
+  hivemq:
+    image: hivemq/hivemq-ce:latest
+    container_name: hivemq
+    ports:
+      - "1883:1883"  # MQTT port
+      - "8080:8080"  # Control Center web UI
+    volumes:
+      - hivemq-data:/opt/hivemq/data
+      - hivemq-log:/opt/hivemq/log
+    networks:
+      - iot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # InfluxDB Time-Series Database
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminpassword
+      - DOCKER_INFLUXDB_INIT_ORG=iot-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=iot-data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+    networks:
+      - iot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    networks:
+      - iot-network
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+
+volumes:
+  hivemq-data:
+    driver: local
+  hivemq-log:
+    driver: local
+  influxdb-data:
+    driver: local
+  influxdb-config:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  iot-network:
+    driver: bridge
